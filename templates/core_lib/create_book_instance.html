@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <main>
+        <div class="pt-3 container">
+            <a class="btn btn-primary float-right" href="{% url 'core:books' %}">To the list of books</a>
+            <section>
+                <div class="row wow fadeIn">
+                    <div class="col-6 offset-3 mb-5">
+                        <p>This is where you can create a copy of the book</p>
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            {{ instance_form|crispy }}
+                            <button class="btn btn-primary" type="submit">Create</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+{% endblock content %}

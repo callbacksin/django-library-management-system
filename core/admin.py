@@ -1,9 +1,15 @@
 from django.contrib import admin
 
-from .models import Item, OrderItem, Order, Book, Author
+from .models import Item, Book, Author, ItemHistory
+from .forms import BookForm
 
 admin.site.register(Item)
-admin.site.register(OrderItem)
-admin.site.register(Order)
-admin.site.register(Book)
 admin.site.register(Author)
+admin.site.register(ItemHistory)
+
+
+class BookAdmin(admin.ModelAdmin):
+    form = BookForm
+
+
+admin.site.register(Book, BookAdmin)

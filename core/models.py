@@ -1,134 +1,203 @@
+from datetime import date
 from django.conf import settings
 from django.db import models
 from django.shortcuts import reverse
+from django.contrib.auth.models import User
 
-CATERGORY_CHOICES = (
-    ('S', 'Методические указания'),
-    ('H', 'Художественная литература'),
-    ('T', 'Техническая литература'),
-)
+# All Choices structures are defined here
 
-LABEL_CHOICES = (
-    ('P', 'primary'),
-    ('S', 'secondary'),
-    ('D', 'danger'),
+CATEGORY_CHOICES = (
+    ('S', 'Methodological Guidelines'),
+    ('H', 'Fiction'),
+    ('T', 'Technical Literature'),
+    ('P', 'Philosophy'),
+    ('S', 'Science'),
+    ('B', 'Biography'),
+    ('M', 'Mystery & Thriller'),
+    ('F', 'Fantasy'),
 )
 
 LANGUAGE_CHOICES = (
-    ('E', 'Английский'),
-    ('R', 'Русский'),
-    ('B', 'Белорусский'),
+    ('E', 'English'),
+    ('R', 'Russian'),
+    ('B', 'Belarusian'),
+    ('F', 'French'),
+    ('G', 'German'),
+    ('S', 'Spanish'),
+    ('C', 'Chinese'),
 )
 
 STATUS_CHOICES = (
-    ('F', 'Есть в наличии'),
-    ('A', 'Отсутствует'),
+    ('F', 'Available'),
+    ('A', 'Unavailable'),
+    ('H', 'Historical'),
 )
 
+# Entity section where concrete models are defined
 
 class Author(models.Model):
-    surname = models.CharField(max_length=50)
-    name = models.CharField(max_length=50)
+    surname = models.CharField(
+        max_length=50,
+        verbose_name='Surname')
+    name = models.CharField(
+        max_length=50,
+        verbose_name='First Name')
+
+    class Meta:
+        verbose_name = 'Author'
+        verbose_name_plural = '1 - Authors'
 
     def __str__(self):
         return self.surname + " " + self.name
 
 
 class Book(models.Model):
-    title = models.CharField(max_length=100)
-    # description = models.TextField()
-    authors = models.ManyToManyField(Author)
-    language = models.CharField(choices=LANGUAGE_CHOICES,
-                                max_length=1,
-                                default='R')
-    category = models.CharField(choices=CATERGORY_CHOICES,
-                                max_length=2)
-    label = models.CharField(choices=LABEL_CHOICES,
-                             max_length=1)
-    # qr-code
+    title = models.CharField(
+        max_length=100,
+        verbose_name='Book Title')
+    authors = models.ManyToManyField(
+        'Author',
+        verbose_name='Authors')
+    language = models.CharField(
+        choices=LANGUAGE_CHOICES,
+        max_length=1,
+        default='R',
+        verbose_name='Language')
+    category = models.CharField(
+        choices=CATEGORY_CHOICES,
+        max_length=2,
+        verbose_name='Category')
+    total_quantity = models.IntegerField(
+        default=0,
+        verbose_name='Total Copies')
+    free_quantity = models.IntegerField(
+        default=0,
+        verbose_name='Available Copies in Library')
+    publisher = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        verbose_name='Publisher',
+    )
+    year_of_publishing = models.PositiveSmallIntegerField(
+        verbose_name='Year of Publishing',
+        null=True,
+        blank=True,
+    )
+    pages = models.PositiveSmallIntegerField(
+        verbose_name='Number of Pages',
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'Book'
+        verbose_name_plural = '2 - Books'
 
     def __str__(self):
-        return self.title + " (" + str(self.id) + ")"
+        return self.title
 
-    def get_absolute_url(self):
+    def get_user_absolute_url(self):
         return reverse("core:book", kwargs={
             "pk": self.id
         })
 
-    def get_total_count(self):
-        return Item.objects.filter(book=self.id).count()
+    def get_admin_absolute_url(self):
+        return reverse("core:admin_book", kwargs={
+            "pk": self.id
+        })
 
-    def get_free_count(self):
-        return Item.objects.filter(book=self.id, status='F').count()
+    def get_related_items(self):
+        return Item.objects.filter(book=self.id)
+
+    def get_item_history(self):
+        return ItemHistory.objects.filter(book=self.id)
+
+    def get_add_to_cart_url(self):
+        return reverse("add-to-cart", kwargs={
+            "pk": self.id
+        })
+
+    def get_remove_from_cart_url(self):
+        return reverse("remove-from-cart", kwargs={
+            "pk": self.id
+        })
 
 
-class Item(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    status = models.CharField(choices=STATUS_CHOICES,
-                              max_length=1,
-                              default='F',
-                              )
-    inventory_number = models.CharField(max_length=20,
-                                        unique=True)
+class AbstractItem(models.Model):
+    operator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        verbose_name='Operator',
+        related_name="%(app_label)s_%(class)s_related1",
+        related_query_name="%(app_label)s_%(class)ss1",)
+    inventory_number = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Inventory Number')
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        verbose_name='Book')
+    status = models.CharField(
+        choices=STATUS_CHOICES,
+        max_length=1,
+        default='F',
+        verbose_name='Status')
+    due_back = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Return Date')
+    borrower = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Borrower',
+        related_name="%(app_label)s_%(class)s_related2",
+        related_query_name="%(app_label)s_%(class)ss2",)
+
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
+
+    class Meta:
+        abstract = True
+        verbose_name = 'Book Instance'
+        verbose_name_plural = '3 - Book Instances'
 
     def __str__(self):
-        return self.inventory_number + " - " + self.book.title
+        return f'Inventory: {self.inventory_number} - Book: {self.book.title}'
 
     def get_absolute_url(self):
         return reverse("core:product", kwargs={
             "slug": self.id
         })
 
-    def get_add_to_cart_url(self):
-        return reverse("core:add-to-cart", kwargs={
-            "slug": self.id
-        })
 
-    def get_remove_from_cart_url(self):
-        return reverse("core:remove-from-cart", kwargs={
-            "slug": self.id
-        })
-
-
-class OrderItem(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    ordered = models.BooleanField(default=False)
-    item = models.ForeignKey(Item,
-                             on_delete=models.CASCADE)
-    quantity = models.IntegerField(default=1)
-
-    def __str__(self):
-        return f"{self.quantity} of {self.item.title}"
-
-    def get_total_item_price(self):
-        return self.quantity * self.item.price
-
-    def get_total_discount_item_price(self):
-        return self.quantity * self.item.discount_price
-
-    def get_amount_saved(self):
-        return self.get_total_item_price() - self.get_total_discount_item_price()
-
-    def get_final_price(self):
-        if self.item.discount_price:
-            return self.get_total_discount_item_price()
-        return self.get_total_item_price()
+class Item(AbstractItem):
+    qr_code = models.CharField(
+        max_length=200,
+        verbose_name='QR Code',
+        null=True,
+        blank=True,
+    )
+    created = models.DateField(auto_now_add=True)
+    modified = models.DateField(auto_now=True)
 
 
-class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
-    items = models.ManyToManyField(OrderItem)
-    start_date = models.DateTimeField(auto_now_add=True)
-    ordered_date = models.DateTimeField()
-    ordered = models.BooleanField(default=False)
+class ItemHistory(AbstractItem):
+    inventory_number = models.CharField(
+        max_length=20,
+        verbose_name='Inventory Number')
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.DO_NOTHING,
+        related_name='item_history')
 
-    def __str__(self):
-        return self.user.username
-
-    # def get_total(self):
-    #     total = 0
-    #     for order_item in self.items.all():
-    #         total += order_item.get_final_price()
-    #     return total
+    class Meta:
+        ordering = ['-pk']
+        verbose_name = 'Instance History'
+        verbose_name_plural = '6 - Instance History'

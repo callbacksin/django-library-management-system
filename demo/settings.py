@@ -1,13 +1,20 @@
 import os
 
+import demo
+# TODO re-generate secret key
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 DEBUG = True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = '-05sgp9!deq=q1nltm@^^2cc+v29i(tyybv3v2t77qi66czazj'
-ALLOWED_HOSTS = []
+SECRET_KEY = 'b^*!#)xm^)joze5uy1v)um^4%uqwjxhdpoq62#5k2)vms2k0_4'
+
+ROOT_URLCONF = "demo.urls"  # this module
+
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -15,13 +22,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'crispy_forms',
+    'django_filters',
+    'django_property_filter',
 
-    'core'
+    'core',
+    'lib_users',
+    'order_process',
 ]
 
 MIDDLEWARE = [
@@ -65,7 +77,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATABASES = {
-    "default": {
+      "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": os.path.join(BASE_DIR, 'db.sqlite3')
     }
@@ -73,15 +85,16 @@ DATABASES = {
 
 if ENVIRONMENT == 'production':
     DEBUG = False
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    SESSION_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECRET_KEY = 'b^*!#)xm^)joze5uy1v)um^4%uqwjxhdpoq62#5k2)vms2k0_4'
+# os.getenv('SECRET_KEY')
+    SESSION_COOKIE_SECURE = False
+    SECURE_BROWSER_XSS_FILTER = False
+    SECURE_CONTENT_TYPE_NOSNIFF = False
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_SECONDS = 31536000
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    #SECURE_REDIRECT_EXEMPT = []
+    SECURE_SSL_REDIRECT = False
+    #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Auth
 
@@ -97,3 +110,13 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = "/"
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+ACCOUNT_ADAPTER = 'demo.account_adapter.NoNewUsersAccountAdapter'
+
+DATE_INPUT_FORMATS = ['%d.%m.%Y']
+
+ACCOUNT_FORMS = {'login': 'lib_users.forms.CustomLoginForm'}
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+

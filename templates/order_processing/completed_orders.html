@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main class="mx-auto col-6">
+        <div class="mt-5 pt-3 container">
+            <div class="table-responsive">
+                <a href='{% url 'orders' %}' class="btn btn-primary float-right">View Pending Orders</a>
+                <h2>List of Completed Orders</h2>
+                <br/>
+                <table class="mt-4 table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Group - Full Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in object_list %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    <a href="{% url 'completed_order' pk=order.pk %}" class="text-primary">
+                                        {{ order.user.profile.academy_group }} {{ order.user.last_name }} {{ order.user.first_name }} {{ order.user.profile.patronymic }}
+                                    </a>
+                                </strong>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="1">The order list is empty</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if is_paginated %}
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination pg-blue">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.previous_page_number }}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active">
+                            <a class="page-link"
+                               href="?{{ queries.urlencode }}&amp;page={{ page_obj.number }}">{{ page_obj.number }}
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.next_page_number }}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </main>
+
+{% endblock content %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main>
+    <div class="pt-3 container">
+        <div class="float-right">
+            <a class="btn btn-primary" style="width:100%" href="{% url 'students' %}">Back to Student List</a>
+            <br/>
+            <a class="btn btn-warning" style="width:100%" href="{% url 'update_password_only' pk=user_form.id.value %}">Update Password</a>
+        </div>
+        <section>
+            <div class="row wow fadeIn">
+                <div class="col-6 offset-3 mb-5">
+                    <p>You can edit the reader's information here</p>
+                    <form method="post">
+                    {% csrf_token %}
+                        {{ user_form.id }}
+                        {{ user_form.username | as_crispy_field }}
+                        {{ user_form.last_name | as_crispy_field }}
+                        {{ user_form.first_name | as_crispy_field }}
+                        {{ profile_form.patronymic | as_crispy_field }}
+                        {{ profile_form.birth_date | as_crispy_field }}
+                        {{ profile_form.academy_group | as_crispy_field }}
+                        {{ user_form.email | as_crispy_field }}
+                        <button class="btn btn-primary" type="submit">Edit</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock content %}

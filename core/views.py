@@ -1,23 +1,81 @@
 from django.contrib import messages
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView, View
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from .models import Item, OrderItem, Order, Book
+from django.views.generic import ListView, DetailView
+from django_filters.views import FilterView
 
-
-# def products(request):
-#     context = {
-#         'items': Item.objects.all()
-#     }
-#     return render(request, "products.html", context)
+from .filters import BookFilter, AuthorFilter, ItemFilter
+from .forms import BookForm, BookInstanceForm, AuthorForm
+from .models import Item, Book, Author
 
 
 def checkout(request):
     return render(request, "checkout.html")
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_panel(request):
+    return render(request, "operate.html")
+
+
+class HomeViewFilter(FilterView):
+    model = Book
+    paginate_by = 10
+    template_name = "home.html"
+    filterset_class = BookFilter
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = BookFilter(
+            self.request.GET, queryset=self.get_queryset())
+        query = self.request.GET.copy()
+        if 'page' in query:
+            del query['page']
+        context['queries'] = query
+        return context
+
+
+class AuthorViewFilter(FilterView):
+    model = Author
+    paginate_by = 10
+    template_name = "core_lib/authors.html"
+    filterset_class = AuthorFilter
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = AuthorFilter(
+            self.request.GET, queryset=self.get_queryset())
+        query = self.request.GET.copy()
+        if 'page' in query:
+            del query['page']
+        context['queries'] = query
+        return context
+
+
+class ItemViewFilter(FilterView):
+    model = Item
+    paginate_by = 10
+    template_name = "core_lib/items.html"
+    filterset_class = ItemFilter
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = ItemFilter(
+            self.request.GET, queryset=self.get_queryset())
+        query = self.request.GET.copy()
+        if 'page' in query:
+            del query['page']
+        context['queries'] = query
+        return context
+
+
+class AdminHomeViewFilter(HomeViewFilter):
+    template_name = "core_lib/books.html"
+    paginate_by = 10
 
 
 class HomeView(ListView):
@@ -26,80 +84,140 @@ class HomeView(ListView):
     template_name = "home.html"
 
 
-class OrderSummaryView(LoginRequiredMixin, View):
-    def get(self, *args, **kwargs):
-        try:
-            order = Order.objects.get(user=self.request.user, ordered=False)
-            context = {
-                "object": order
-            }
-            return render(self.request, 'order_summary.html', context)
-        except ObjectDoesNotExist:
-            messages.info(self.request, "You do not have an active order")
-            return redirect("/")
-
-
 class ItemDetailView(DetailView):
     model = Item
-    template_name = "product.html"
+    template_name = "core_lib/student_book_view.html"
 
 
 class BookDetailView(DetailView):
     model = Book
-    template_name = "product.html"
+    template_name = "core_lib/student_book_view.html"
 
 
-@login_required
-def add_to_cart(request, slug):
-    item = get_object_or_404(Item, slug=slug)
-    order_item, created = OrderItem.objects.get_or_create(
-        item=item,
-        user=request.user,
-        ordered=False
-    )
-    order_qs = Order.objects.filter(user=request.user, ordered=False)
-    if order_qs.exists():
-        order = order_qs[0]
-        # check if the order item is in the order
-        if order.items.filter(item__slug=item.slug).exists():
-            order_item.quantity += 1
-            order_item.save()
-            messages.info(request, "This item quantity was updated")
+class AdminBookDetailView(BookDetailView):
+    template_name = "core_lib/concrete_book.html"
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def create_book(request):
+    if request.POST:
+        book_form = BookForm(request.POST)
+        if book_form.is_valid():
+            book_form.save()
+            book_title = book_form.cleaned_data.get('title')
+            messages.success(request,
+                             f'Book "{book_title}" created successfully')
+            return redirect('core:books')
         else:
-            messages.info(request, "This item was added to your cart")
-            order.items.add(order_item)
+            messages.info(request,
+                          'Please correct the errors')
     else:
-        ordered_date = timezone.now()
-        order = Order.objects.create(user=request.user,
-                                     ordered_date=ordered_date)
-        order.items.add(order_item)
-        messages.info(request, "This item was added to your cart")
-    return redirect("core:product", slug=slug)
+        book_form = BookForm()
+    return render(request, 'core_lib/create_book.html',
+                  {'book_form': book_form, })
 
 
-@login_required
-def remove_from_cart(request, slug):
-    item = get_object_or_404(Item, slug=slug)
-    order_qs = Order.objects.filter(
-        user=request.user,
-        ordered=False)
-    if order_qs.exists():
-        order = order_qs[0]
-        # check if the order item is in the order
-        if order.items.filter(item__slug=item.slug).exists():
-            OrderItem.objects.filter(
-                item=item,
-                user=request.user,
-                ordered=False
-            )[0]
-            order.items.remove(order_item)
-            messages.info(request, "This item was removed from your cart")
-            return redirect("core:product", slug=slug)
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def update_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        book_form = BookForm(request.POST, instance=book)
+        if book_form.is_valid():
+            book = book_form.save(commit=False)
+            book.operator = request.user
+            book.save()
+            messages.success(request,
+                             'Book updated successfully')
+            return redirect('core:admin_book', pk=pk)
         else:
-            # add a message saying the user doesnt have the order item
-            messages.info(request, "This item was not in your cart")
-            return redirect("core:product", slug=slug)
+            messages.info(request,
+                          'Please correct the errors')
     else:
-        # add a message saying the user doesnt have an order
-        messages.info(request, "You do not have an active order")
-        return redirect("core:product", slug=slug)
+        book_form = BookForm(instance=book)
+    return render(request, 'core_lib/update_book.html',
+                  {'book_form': book_form, })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def update_author(request, pk):
+    author = get_object_or_404(Author, pk=pk)
+    if request.method == 'POST':
+        author_form = AuthorForm(request.POST, instance=author)
+        if author_form.is_valid():
+            author_form.save()
+            messages.success(request,
+                             'Author updated successfully')
+            return redirect('core:authors')
+        else:
+            messages.info(request,
+                          'Please correct the errors')
+    else:
+        author_form = AuthorForm(instance=author)
+    return render(request, 'core_lib/update_author.html',
+                  {'author_form': author_form, })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def delete_book(request, pk):
+    book = Book.objects.filter(pk=pk).first()
+    title = book.title
+    if request.method == 'POST':
+        book.delete()
+        messages.success(request,
+                         f'Book "{title}" deleted successfully')
+    else:
+        messages.info(request,
+                      'Please correct the errors')
+    return redirect('core:books')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def create_book_instance(request, pk):
+    if request.POST:
+        instance_form = BookInstanceForm(request.POST)
+        if instance_form.is_valid():
+            inventory = instance_form.cleaned_data.get('inventory_number')
+            book = Book.objects.filter(pk=pk).first()
+            book_instance = Item(
+                operator=request.user,
+                inventory_number=inventory,
+                book=book, )
+            book_instance.save()
+            book.total_quantity += 1
+            book.free_quantity += 1
+            book.save()
+            title = book.title
+            messages.success(
+                request,
+                f'''Book instance of "{title}" created successfully
+                 with inventory number {inventory}''')
+            return redirect('core:admin_book', pk=book.pk)
+        else:
+            messages.info(request, 'Please correct the errors')
+    else:
+        instance_form = BookInstanceForm()
+    return render(request, 'core_lib/create_book_instance.html',
+                  {'instance_form': instance_form, })
+
+
+@user_passes_test(lambda u: u.is_superuser)
+@transaction.atomic
+def delete_book_instance(request, pk):
+    item = Item.objects.filter(pk=pk).first()
+    inventory = item.inventory_number
+    if request.method == 'POST':
+        item.delete()
+        item.book.free_quantity -= 1
+        item.book.total_quantity -= 1
+        item.book.save()
+        messages.success(request,
+                         f'Book instance with inventory number "{inventory}" deleted successfully')
+    else:
+        messages.info(request,
+                      'Please correct the errors')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

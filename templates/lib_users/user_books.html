@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<main>
+  <div class="mt-4 container">
+    <section class="">
+        <h4>Current Books</h4>
+        <br/>
+        <div class="row wow fadeIn">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Authors</th>
+                    <th scope="col">Inventory Number</th>
+                    <th scope="col">Return Date</th>
+                    <th scope="col">Overdue</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in request.user.profile.get_related_book_instances %}
+                    <tr>
+                        <td>{{ item.book.title }}</td>
+                        <td>
+                            {% for author in item.book.authors.all %}
+                                {{ author.surname }} {{ author.name }} <br/>
+                            {% endfor %}
+                        </td>
+                        <td>{{ item.inventory_number }}</td>
+                        <td>{{ item.due_back|date:'d.m.Y'|default:'-' }}</td>
+                        <td>
+                            {% if item.is_overdue %}
+                                <span class="badge badge-pill badge-danger">Yes</span>
+                            {% else %}
+                                <span class="badge badge-pill badge-success">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">You have no books yet</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <hr/>
+            <h4>Books You Have Read Before</h4>
+                <table class="table table-bordered table-striped text-center">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Inventory Number</th>
+                        <th scope="col">Issued by Operator</th>
+                        <th scope="col">Return Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in request.user.profile.get_related_history %}
+                        <tr>
+                            <td>{{ item.book.title }}</td>
+                            <td>{{ item.inventory_number }}</td>
+                            <td>{{ item.operator.last_name }} {{ item.operator.first_name }}</td>
+                            <td>{{ item.return_date }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No reading history available</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+        </div>
+    </section>
+  </div>
+</main>
+{% endblock content %}

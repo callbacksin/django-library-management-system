@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <br/>
+    <br/>
+    <main class="mx-auto col-6">
+        <div class="mb-6 font-weight-bold">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>
+                        <a href="{% url 'students' %}" class="text-primary font-weight-bold">
+                            List of Users (Students)
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">2</th>
+                    <td>
+                        <a href="{% url 'core:items' %}" class="text-primary font-weight-bold">
+                            List of Book Copies
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">3</th>
+                    <td>
+                        <a href="{% url 'core:books' %}" class="text-primary font-weight-bold">
+                            List of Books
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">4</th>
+                    <td>
+                        <a href="{% url 'core:authors' %}" class="text-primary font-weight-bold">
+                            List of Authors
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">5</th>
+                    <td>
+                        <a href="{% url 'orders' %}" class="text-primary font-weight-bold">
+                            List of Orders
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+{% endblock content %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main class="mt-5 pt-2">
+        <div class="container dark-grey-text mt-2">
+            <div class="row wow fadeIn">
+                <div class="col-md-8">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Title</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.title }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Authors</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {% for author in object.authors.all %}
+                                        {{ author.surname }} {{ author.name }} <br/>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Category</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.get_category_display }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Language</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.get_language_display }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Year of Publication</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.year_of_publishing|default:'Not specified' }}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Number of Pages</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.pages|default:'Not specified' }}
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Publisher</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{ object.publisher|default:'Not specified' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% if object.free_quantity != 0 %}
+                <a href="{{ object.get_add_to_cart_url }}" class="btn btn-primary">Order</a>
+            {% else %}
+                <p>It seems this book is not available</p>
+            {% endif %}
+        </div>
+    </main>
+
+{% endblock content %}

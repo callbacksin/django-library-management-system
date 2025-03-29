@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+    <main>
+        <div class="pt-3 pb-5 container">
+            <form method="get">
+                <div class="well">
+                    <h4 style="margin-top: 0">Filter</h4>
+                    <p>If you plan to use the filter, don't forget to click the "Search" button</p>
+                    <div class="row">
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.inventory_number | as_crispy_field }}
+                        </div>
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.status | as_crispy_field }}
+                        </div>
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.borrower | as_crispy_field }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-search"></span> Search
+                    </button>
+                    <a href="{% url 'core:items' %}" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-search"></span> Reset Filter
+                    </a>
+                </div>
+            </form>
+            <br/>
+            <section class="text-center mb-4">
+                <div class="row wow fadeIn">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Book</th>
+                            <th scope="col">Inventory Number</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Borrower</th>
+                            <th scope="col">Overdue?</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in object_list %}
+                            <tr>
+                                <td>{{ item.book.title }}</td>
+                                <td>{{ item.inventory_number }}</td>
+                                <td>{{ item.get_status_display }}</td>
+                                <td>{{ item.borrower.last_name|default:'---' }} {{ item.borrower.first_name }}</td>
+                                <td>
+                                    {% if item.is_overdue %}
+                                        <span class="badge badge-pill badge-danger">Yes</span>
+                                    {% else %}
+                                        <span class="badge badge-pill badge-success">No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">No book instances were found based on the given criteria</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% if is_paginated %}
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination pg-blue">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.previous_page_number }}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only"><</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active">
+                            <a class="page-link"
+                               href="?{{ queries.urlencode }}&amp;page={{ page_obj.number }}">{{ page_obj.number }}
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.next_page_number }}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">></span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </main>
+
+{% endblock content %}

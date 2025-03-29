@@ -1,13 +1,24 @@
 env
+Scripts
+Lib/site-packages
+core/migrations
+order_process/migrations
+lib_users/migrations
+static/admin
+static/autocomplete_light
+static/vendor/
+
 **/*.pyc
 **/__pycache__
 media
 .DS_Store
 *.sqlite3
 *.env
+pyvenv.cfg
 
 # Accept these files in the repository
 !.gitignore
 !.travis.yml
 /.env
-/.vscode
+.vscode
+.idea

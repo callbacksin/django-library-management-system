@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main>
+        <div class="mt-5 pt-3 container">
+            <div class="table-responsive">
+                <h2>Order - {{ object.user.last_name }} {{ object.user.first_name }} {{ object.user.profile.academy_group }}</h2>
+                <table class="mt-4 table text-center table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Authors</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Language</th>
+                        <th scope="col">Year of Publication</th>
+                        <th scope="col">Number of Pages</th>
+                        <th scope="col">Publisher</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order_book in object.books.all %}
+                        {% if order_book.is_in_library or not object.completed %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td class="font-weight-bold">{{ order_book.book.title }}</td>
+                            <td>
+                                {% for author in order_book.book.authors.all %}
+                                   <span class="font-weight-bold">{{ author.surname }} {{ author.name }}, <br/></span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ order_book.book.get_category_display }}</td>
+                            <td>{{ order_book.book.get_language_display }}</td>
+                            <td>{{ order_book.book.year_of_publishing|default:'-' }}</td>
+                            <td>{{ order_book.book.pages|default:'-' }}</td>
+                            <td>{{ order_book.book.publisher|default:'-' }}</td>
+                        </tr>
+                        {% else %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td colspan="7">The book "<span class="font-weight-bold">{{ order_book.book.title }}</span>" cannot be issued.</td>
+                            </tr>
+                        {% endif %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="9">Order is empty</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-outline col-8 mx-0 mx-auto mb-5">
+                {% if object.comment and object.comment != '' %}
+                <h2>Comment from the Library Staff:</h2>
+                <p>{{ object.comment }}</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+
+{% endblock content %}
