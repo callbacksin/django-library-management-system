@@ -1,0 +1,85 @@
+{% load cart_template_tags %}
+{% load static %}
+<nav class="navbar fixed-top navbar-expand-lg navbar-light white scrolling-navbar">
+    <div class="container">
+
+      <!-- Brand -->
+      <span class="navbar-brand">
+        <img class="logo" src="{% static 'img/logo.svg' %}"/>
+        <strong  style="color: #445389">  Electronic Library</strong>
+      </span>
+
+      <!-- Collapse -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Links -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+        <!-- Left -->
+        <ul class="navbar-nav mr-auto" style="columns: 1; -webkit-columns: 1;">
+          <li class="nav-item left">
+            <a class="nav-link waves-effect" href="/">Home
+{#              <span class="sr-only">(current)</span>#}
+            </a>
+          </li>
+          {% comment %} {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link waves-effect" href="/checkout">
+            Order</a>
+          </li>
+          {% endif %} {% endcomment %}
+          {% if request.user.is_superuser %}
+          <li class="nav-item">
+            <a class="nav-link waves-effect" href="{% url 'core:operate' %}">
+            Admin Panel</a>
+          </li>
+          {% endif %}
+          {% if user.is_authenticated and not request.user.is_superuser %}
+          <li class="nav-item">
+            <a class="nav-link waves-effect" href="{% url 'user_books' %}">
+            My Books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link waves-effect" href="{% url 'user_orders' %}">
+            My Orders</a>
+          </li>
+          {% endif %}
+        </ul>
+
+        <!-- Right -->
+        <ul class="navbar-nav nav-flex-icons">
+        {% if request.user.is_authenticated %}
+          {% if not request.user.is_superuser %}
+          <li class="nav-item">
+            <a href="{% url 'order-summary' %}" class="nav-link waves-effect">
+              <span class="badge red z-depth-1 mr-1"> {{ request.user|cart_item_count }} </span>
+              <i class="fas fa-shopping-cart"></i>
+              Cart
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{% url 'account_logout' %}" class="nav-link waves-effect float-right">
+              Logout
+            </a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a href="{% url 'account_login' %}" class="nav-link waves-effect">
+              Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'account_signup' %}" class="nav-link waves-effect">
+              Register
+            </a>
+          </li>
+        {% endif %}
+        </ul>
+      </div>
+
+    </div>
+  </nav>

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <main>
+        <div class="pt-3 container">
+            <div class="float-right">
+                <a class="btn btn-primary" style="width:100%" href="{% url 'core:authors' %}">To the list of authors</a>
+            </div>
+            <section>
+                <div class="row wow fadeIn">
+                    <div class="col-6 offset-3 mb-5">
+                        <p>You can edit author information here</p>
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ author_form | crispy }}
+                            <button class="btn btn-primary" type="submit">Apply</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock content %}

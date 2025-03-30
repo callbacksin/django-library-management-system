@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main>
+    <div class="pt-3 container">
+        <a class="btn btn-primary float-right" href="{% url 'students' %}">Back to Students List</a>
+        <section>
+            <div class="row wow fadeIn">
+                <div class="col-6 offset-3 mb-5">
+                    <p>You can declare a new group of students here</p>
+                    <form method="post">
+                    {% csrf_token %}
+                    {{ group_form|crispy }}
+                    <button class="btn btn-primary" type="submit">Create</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock content %}

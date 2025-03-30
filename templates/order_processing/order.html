@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main>
+        <div class="mt-5 pt-3 container">
+            <div class="table-responsive">
+                <a href='{% url 'orders' %}' class="btn btn-primary float-right">View Orders List</a>
+                <h2>Active Order - {{ object.user.last_name }} {{ object.user.first_name }} {{ object.user.profile.academy_group }}</h2>
+                <table class="mt-4 table text-center table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Authors</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Language</th>
+                        <th scope="col">Year of Publication</th>
+                        <th scope="col">Number of Pages</th>
+                        <th scope="col">Publisher</th>
+                        <th scope="col">Change Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order_book in object.books.all %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td class="font-weight-bold">{{ order_book.book.title }}</td>
+                            <td>
+                                {% for author in order_book.book.authors.all %}
+                                   <span class="font-weight-bold"> {{ author.surname }} {{ author.name }}, <br/></span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ order_book.book.get_category_display }}</td>
+                            <td>{{ order_book.book.get_language_display }}</td>
+                            <td>{{ order_book.book.year_of_publishing|default:'-' }}</td>
+                            <td>{{ order_book.book.pages|default:'-' }}</td>
+                            <td>{{ order_book.book.publisher|default:'-' }}</td>
+                            <td>
+                                {% if order_book.is_in_library %}
+                                    <a class="font-weight-bold text-danger" href="{% url 'unset' pk=order_book.id %}">Remove from circulation</a>
+                                {% else %}
+                                    <a class="font-weight-bold text-success" href="{% url 'set' pk=order_book.id %}">Add to circulation</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9">The order is empty</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <form action="{% url 'complete_order' pk=object.id %}">
+                <div class="form-outline col-8 mx-0 mx-auto mb-5">
+                    <label class="form-label" for="comment">You can leave a comment for the user here:</label>
+                    <textarea class="form-control"
+                                id="comment"
+                                name="comment"
+                                rows="4"></textarea>
+                    <button class="btn btn-primary" type="submit">Complete Order</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+{% endblock content %}

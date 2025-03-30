@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+{# All these scripts are required for django-autocomplete-light #}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+
+<link href="{% static 'admin/css/vendor/select2/select2.css' %} " type="text/css" media="screen" rel="stylesheet">
+<link href="{% static 'admin/css/autocomplete.css' %}" type="text/css" media="screen" rel="stylesheet">
+<link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="screen" rel="stylesheet">
+<script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script src="{% static 'admin/js/vendor/select2/select2.full.js' %}"></script>
+<script src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script src="{% static 'autocomplete_light/autocomplete_light.js' %}"></script>
+<script src="{% static 'admin/js/core.js' %}"></script>
+<script src="{% static 'autocomplete_light/select2.js' %}"></script>
+<script src="{% static 'admin/js/admin/RelatedObjectLookups.js' %}"></script>
+<script src="{% static 'autocomplete_light/i18n/en.js' %}"></script>
+<script src="{% static 'admin/js/actions.js' %}"></script>
+<script src="{% static 'admin/js/urlify.js' %}"></script>
+<script src="{% static 'admin/js/prepopulate.js' %}"></script>
+<script src="{% static 'admin/js/vendor/xregexp/xregexp.js' %}"></script>
+
+<link rel="stylesheet" type="text/css"
+      href="{% static 'autocomplete_light/vendor/select2/dist/css/select2.css' %}"/>
+
+<main>
+    <div class="pt-3 container">
+        <div class="float-right">
+            <a class="btn btn-primary" href="{% url 'students' %}">Back to Students List</a>
+            <br/>
+            <input type="button" class="btn btn-primary" value="Back to User" onClick="javascript:history.go(-1);">
+        </div>
+        <section>
+            <div class="row wow fadeIn">
+                <div class="col-6 offset-3 mb-5">
+                    <p>Assigning a book to the reader. Enter the book's inventory number:</p>
+                    <a class="text-primary font-weight-bold" data-toggle="collapse" href="#by_qr" role="button"
+                        aria-expanded="false" aria-controls="by_qr">
+                        Assign by QR Code
+                    </a>
+                    <br/>
+                    <a class="text-primary font-weight-bold" data-toggle="collapse" href="#by_inventory_number" role="button"
+                        aria-expanded="false" aria-controls="by_inventory_number">
+                        Assign by Inventory Number
+                    </a>
+                    <form method="post">
+                    {% csrf_token %}
+                    <div class="collapse" id="by_qr">
+                        <div id="qr-reader" style="width:500px"></div>
+                        <div id="div_id_inventory" class="form-group">
+                            <label for="id_inventory" class="">
+                                Inventory Number *
+                            </label>
+                            <div class="">
+                                <input type="text" name="inventory" class="dateinput form-control" id="id_inventory">
+                                <small id="hint_id_inventory" class="form-text text-muted">
+                                    Point the camera at the QR code. The scanned result will appear in this field.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse" id="by_inventory_number">
+                        <div class="form-group">
+                            <label class="requiredField">
+                                {{ book_instance_form.inventory_number.label }}
+                                <span class="asteriskField">*</span>
+                            </label>
+                            <div>
+                                {{ book_instance_form.inventory_number }}
+                            </div>
+                            {{ book_instance_form.inventory_number.help_text }}
+                        </div>
+                    </div>
+                    {{ book_instance_form.due_back|as_crispy_field }}
+                    <button class="btn btn-primary" type="submit">Assign</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="{% static 'js/html5-qrcode.js' %}"></script>
+<script>
+function onScanSuccess(qrCodeMessage) {
+    document.getElementById('id_inventory').value = qrCodeMessage;
+}
+
+var html5QrcodeScanner = new Html5QrcodeScanner(
+	"qr-reader", { fps: 10, qrbox: 250 });
+html5QrcodeScanner.render(onScanSuccess);
+</script>
+{% endblock content %}

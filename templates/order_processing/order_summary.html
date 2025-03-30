@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main>
+        <div class="mt-5 pt-3 container">
+            <div class="table-responsive">
+                <h2>Active Order</h2>
+                <table class="mt-4 table text-center table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Authors</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Language</th>
+                        <th scope="col">Year of Publication</th>
+                        <th scope="col">Number of Pages</th>
+                        <th scope="col">Publisher</th>
+                        <th scope="col">Remove from Cart</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order_book in object.books.all %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ order_book.book.title }}</td>
+                            <td>
+                                {% for author in order_book.book.authors.all %}
+                                    {{ author.surname }} {{ author.name }} <br/>
+                                {% endfor %}
+                            </td>
+                            <td>{{ order_book.book.get_category_display }}</td>
+                            <td>{{ order_book.book.get_language_display }}</td>
+                            <td>{{ order_book.book.year_of_publishing|default:'-' }}</td>
+                            <td>{{ order_book.book.pages|default:'-' }}</td>
+                            <td>{{ order_book.book.publisher|default:'-' }}</td>
+                            <td><a class="text-danger" href="{{ order_book.book.get_remove_from_cart_url }}">Remove</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9">Your cart is empty</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="9">
+                            <a class="btn btn-warning float-right ml-2" href="{% url 'send_order' %}">Order</a>
+                            <a class="btn btn-primary float-right" href="{% url 'core:home' %}">Continue Choosing Books</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+{% endblock content %}

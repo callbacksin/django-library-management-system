@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <main class="mx-auto">
+        <div class="mt-5 pt-3 container">
+            <div class="table-responsive">
+                <h2>Your Orders List</h2>
+                <br/>
+                <table class="mt-4 table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Group - Full Name</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in object %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>
+                                    <a href="{% url 'user_order' pk=order.pk %}" class="text-primary">
+                                        {{ order.user.profile.academy_group }} {{ order.user.last_name }} {{ order.user.first_name }} {{ order.user.profile.patronymic }}
+                                    </a>
+                                </strong>
+                            </td>
+                            <td>
+                                {% if order.completed %}
+                                    <span class="font-weight-bold text-success">Processing Complete</span>
+                                {% else %}
+                                    <span class="font-weight-bold text-warning">In Progress</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">Order list is empty</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+{% endblock content %}

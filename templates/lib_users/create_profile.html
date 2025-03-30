@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<main>
+    <div class="pt-3 mt-2 container">
+        <a class="btn btn-primary float-right" href="{% url 'students' %}">Back to Students List</a>
+        <section>
+            <div class="row wow fadeIn">
+                <div class="col-8 offset-3 mb-5">
+                    <p>You can register a new library reader here</p>
+                    <hr>
+                    <form method="post">
+                    {% csrf_token %}
+{#                        {{ user_form.username|as_crispy_field }}#}
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mb-0">
+                                {{ user_form.username|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-6 mb-0">
+                                {{ user_form.academy_group|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-4 mb-0">
+                                {{ user_form.last_name|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-4 mb-0">
+                                {{ user_form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-4 mb-0">
+                                {{ user_form.patronymic|as_crispy_field }}
+                            </div>
+                        </div>
+                        {{ user_form.birth_date|as_crispy_field }}
+                        {{ user_form.email|as_crispy_field }}
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mb-0">
+                                {{ user_form.password1|as_crispy_field }}
+                            </div>
+                            <div class="form-group col-md-6 mb-0">
+                                {{ user_form.password2|as_crispy_field }}
+                            </div>
+                        </div>
+                        {{ user_form.is_superuser|as_crispy_field }}
+                    <button class="btn btn-primary d-flex mx-auto mx-0" type="submit">Create</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock content %}

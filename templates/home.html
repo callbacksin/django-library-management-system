@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <main>
+            <div class="mt-3 pt-3 container">
+                <p>You are logged in as {{ request.user.last_name }} {{ request.user.first_name }}</p>
+                <a class="text-primary font-weight-bold" data-toggle="collapse" href="#collapseFilter" role="button"
+                   aria-expanded="false" aria-controls="collapseFilter">
+                    Show Filter
+                </a>
+                &ensp; &ensp;
+                <a href="{% url 'core:home' %}" class="text-danger font-weight-bold">
+                    <span class="glyphicon glyphicon-search"></span> Reset Filter
+                </a>
+                <div class="collapse" id="collapseFilter">
+                    <br/>
+                    <form method="get">
+                        <div class="well">
+                            <h4 style="margin-top: 0">Filter</h4>
+                            <p>If you plan to use the filter, don't forget to click the "Search" button</p>
+                            <div class="row">
+                                <div class="form-group col-sm-5 col-md-4">
+                                    {{ filter.form.title | as_crispy_field }}
+                                </div>
+                                <div class="form-group col-sm-4 col-sm-3">
+                                    {{ filter.form.authors | as_crispy_field }}
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <div class="form-group col-sm-2">
+                                    {{ filter.form.category | as_crispy_field }}
+                                </div>
+                                <div class="form-group col-sm-2">
+                                    {{ filter.form.language | as_crispy_field }}
+                                </div>
+                                <div class="form-group col-sm-3">
+                                    {{ filter.form.publisher | as_crispy_field }}
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <div class="form-group form-inline col-sm-5 col-md-5">
+                                    <label>{{ filter.form.year_of_publishing.label }}</label>
+                                    &ensp;
+                                    {{ filter.form.year_of_publishing }}
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="row">
+                                <div class="form-group form-inline col-sm-5 col-md-5">
+                                    <label>{{ filter.form.pages.label }}</label>
+                                    &ensp;
+                                    {{ filter.form.pages }}
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-search"></span> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <br/>
+                <br/>
+
+                <table class="mt-4 table text-center table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Authors</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Language</th>
+                        <th scope="col">Year of Publication</th>
+                        <th scope="col">Number of Pages</th>
+                        <th scope="col">Publisher</th>
+                        <th scope="col">Available?</th>
+                        <th scope="col">Order</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for book in object_list %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    <a href="{{ book.get_user_absolute_url }}" class="text-primary">
+                                        {{ book.title }}
+                                    </a>
+                                </strong>
+                            </td>
+                            <td>
+                                {% for author in book.authors.all %}
+                                    {{ author.surname }} {{ author.name }}, <br/>
+                                {% endfor %}
+                            </td>
+                            <td>{{ book.get_category_display }}</td>
+                            <td>{{ book.get_language_display }}</td>
+                            <td>{{ book.year_of_publishing|default:'-' }}</td>
+                            <td>{{ book.pages|default:'-' }}</td>
+                            <td>{{ book.publisher|default:'-' }}</td>
+                            <td>
+                                {% if book.free_quantity != 0 %}
+                                    <h5><span class="badge rounded-pill bg-success">Yes</span></h5>
+                                {% else %}
+                                    <h5><span class="badge rounded-pill bg-danger">No</span></h5>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if book.free_quantity != 0 %}
+                                    <strong><a class="text-primary" href="{{ book.get_add_to_cart_url }}">Order</a></strong>
+                                {% else %}
+                                    <span>-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9">No results found for your criteria.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if is_paginated %}
+                    <nav class="d-flex justify-content-center">
+                        <ul class="pagination pg-blue">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?{{ queries.urlencode }}&amp;page={{ page_obj.previous_page_number }}"
+                                       aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                        <span class="sr-only"><</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item active">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.number }}">{{ page_obj.number }}
+                                    <span class="sr-only">(current)</span>
+                                </a>
+                            </li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="?{{ queries.urlencode }}&amp;page={{ page_obj.next_page_number }}"
+                                       aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                        <span class="sr-only">></span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </main>
+    {% else %}
+        <main style="background: #eff8fd; height: 100vh">
+            <div class="container bg-image"
+                 style="background-image: url({% static 'img/home.png' %}); height: 100vh; width: 100vw; background-repeat: no-repeat;">
+                <div style="width: 350px" class="mt-5 float-right">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>Electronic Library</h4>
+                            <p>Welcome to the library. This service is designed to simplify working with the library: to provide the opportunity to view the current library collection online, check the availability of required books, and, if available, order them.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    {% endif %}
+{% endblock content %}

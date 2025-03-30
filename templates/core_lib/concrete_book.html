@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block content %}
+    <main>
+        <div class="pt-3 container mb-xl-n5 pb-5">
+            <section class="text-center">
+                <div class="well text-left">
+                    <h4>Book Profile</h4>
+                    <div class="float-right">
+                        <a class="btn btn-primary" style="width: 100%" href="{% url 'core:books' %}">Back to Book List</a>
+                        <br/>
+                        <br/>
+                        <a class="btn btn-success" style="width: 100%" href="{% url 'core:create_item' pk=object.id %}">Create
+                            Instance</a>
+                        <br/>
+                        <br/>
+                        <a class="btn btn-warning" style="width: 100%" href="{% url 'core:update_book' pk=object.id %}">Update
+                            Book</a>
+                        <br/>
+                        <br/>
+                        <form action="{% url 'core:delete_book' pk=object.id %}"
+                              method="post"
+                              onsubmit="window.book_delete_confirmation()">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="width: 100%">
+                                Delete Book
+                            </button>
+                        </form>
+                    </div>
+                    <br/>
+                    <div class="col-md-8">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Title</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{ object.title }}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Authors</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {% for author in object.authors.all %}
+                                            {{ author.surname }} {{ author.name }} <br/>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Category</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{ object.get_category_display }}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Language</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{ object.get_language_display }}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">How many instances of the book are currently<br/>in the library</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{ object.free_quantity }}
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <h6 class="mb-0">Total instances of the book</h6>
+                                    </div>
+                                    <div class="col-sm-9 text-secondary">
+                                        {{ object.total_quantity }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <h4>Book Instances</h4>
+                    <br/>
+                    <div class="row wow fadeIn">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Inventory Number</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Return Date</th>
+                                <th scope="col">Borrower</th>
+                                <th scope="col">Overdue</th>
+                                <th scope="col" colspan="3">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in object.get_related_items %}
+                                <tr>
+                                    <td>{{ item.inventory_number }}</td>
+                                    <td>{{ item.get_status_display }}</td>
+                                    <td>{{ item.due_back|date:'d.m.Y'|default:'-' }}</td>
+                                    <td>{{ item.borrower.last_name|default:'-' }} {{ item.borrower.first_name }}</td>
+                                    <td>
+                                        {% if item.is_overdue %}
+                                            <span class="badge badge-pill badge-danger">Yes</span>
+                                        {% else %}
+                                            <span class="badge badge-pill badge-success">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="{% url 'core:delete_item' pk=item.id %}"
+                                              method="post"
+                                              onsubmit="window.item_delete_confirmation()">
+                                            {% csrf_token %}
+                                            <button type="submit" class="badge rounded bg-danger shadow-none">
+                                                Delete <br/> Instance
+                                            </button>
+                                        </form>
+                                    </td>
+                                    {% empty %}
+                                <tr>
+                                    <td colspan="6">No instances of the book have been declared yet</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script type="text/javascript">
+        window.book_delete_confirmation = function () {
+            let isValid = confirm(
+                'The "Delete Book" button was pressed. ' +
+                'Are you sure you want to delete the book? ' +
+                'All instances of the book will also be deleted.'
+            );
+            if (!isValid) {
+                event.preventDefault();
+                alert("Book not deleted!");
+            }
+        }
+        window.item_delete_confirmation = function () {
+            let isValid = confirm(
+                'The "Delete Instance" button was pressed. ' +
+                'Are you sure you want to delete this book instance?'
+            );
+            if (!isValid) {
+                event.preventDefault();
+                alert("Book instance not deleted!");
+            }
+        }
+    </script>
+{% endblock content %}

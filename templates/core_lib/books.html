@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+    <main>
+        <div class="pt-3 pb-5 container">
+            <form method="get">
+                <div class="well">
+                    <h4 style="margin-top: 0">Filter</h4>
+                    <p>If you are going to use the filter, don't forget to click the "Find" button</p>
+                    <div class="row">
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.title | as_crispy_field }}
+                        </div>
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.authors | as_crispy_field }}
+                        </div>
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.category | as_crispy_field }}
+                        </div>
+                        <div class="form-group col-sm-4 col-md-3">
+                            {{ filter.form.language | as_crispy_field }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-search"></span> Find
+                    </button>
+                    <a href="{% url 'core:books' %}" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-search"></span> Reset filter
+                    </a>
+                    <div class="float-right">
+                        <span>Actions:</span>
+                        <a href="{% url 'core:create_book' %}" class="btn btn-success">
+                            Create Book
+                        </a>
+                    </div>
+                </div>
+            </form>
+            <br/>
+            <section class="text-center mb-4">
+                <div class="row wow fadeIn">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Authors</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Language</th>
+                            <th scope="col">How many books <br/> are currently in <br/> the library</th>
+                            <th scope="col">Total books</th>
+                            <th scope="col" colspan="3">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in object_list %}
+                            <tr>
+                                <td>
+                                    <a href="{{ item.get_admin_absolute_url }}" class="text-primary">
+                                        {{ item.title }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% for author in item.authors.all %}
+                                        {{ author.surname }} {{ author.name }} <br/>
+                                    {% endfor %}
+                                </td>
+                                <td>{{ item.get_category_display }}</td>
+                                <td>{{ item.get_language_display }}</td>
+                                <td>{{ item.free_quantity }}</td>
+                                <td>{{ item.total_quantity }}</td>
+                                <td>
+                                    <a href="{% url 'core:update_book' pk=item.id %}">
+                                        <span class="badge rounded bg-success">Update <br/> Book</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">Could not find books based on the provided criteria</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% if is_paginated %}
+                <nav class="d-flex justify-content-center">
+                    <ul class="pagination pg-blue">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.previous_page_number }}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only"><</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active">
+                            <a class="page-link"
+                               href="?{{ queries.urlencode }}&amp;page={{ page_obj.number }}">{{ page_obj.number }}
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?{{ queries.urlencode }}&amp;page={{ page_obj.next_page_number }}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">></span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </main>
+
+{% endblock content %}
