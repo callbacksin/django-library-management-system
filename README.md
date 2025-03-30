@@ -1,46 +1,21 @@
-# TODO update!
+# Django Library Management System
 
-<p align="center">
-  <p align="center">
-    <a href="https://justdjango.com/?utm_source=github&utm_medium=logo" target="_blank">
-      <img src="https://assets.justdjango.com/static/branding/logo.svg" alt="JustDjango" height="72">
-    </a>
-  </p>
-  <p align="center">
-    The Definitive Django Learning Platform.
-  </p>
-</p>
+## Understanding the application
 
-# Django Project Boilerplate
+* [Data model description](./docs/data_model.md)
 
-This repository is a boilerplate Django project for quickly getting started.
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=GEogao-tUec"><img src="https://github.com/justdjango/django_project_boilerplate/blob/master/thumbnail.png" width="290"></a>
-</p>
-
-## Getting started
-
-Steps:
+## Running Library Management System locally
 
 1. Clone/pull/download this repository
-2. Create a virtualenv with `virtualenv env` and install dependencies with `pip install -r requirements.txt`
+2. Create a virtualenv with `virtualenv env` (python3 -m venv env), activate it and install dependencies with `pip install -r requirements.txt`
 3. Configure your .env variables
-4. Rename your project with `python manage.py rename <yourprojectname> <newprojectname>`
+4. Prepare SQL queries for a local database (SQLLite3) with `python manage.py makemigrations` and execute them with `python manage.py migrate` commands
+5. Create an operator (admin) with `python manage.py createsuperuser`. It will be able to log in and perform various operations with the catalog
+6. Start the server: `python manage.py runserver`
 
-This project includes:
+You can then access electronic library here: http://localhost:8000
 
-1. Settings modules for deploying with Azure
-2. Django commands for renaming your project and creating a superuser
-3. A cli tool for setting environment variables for deployment
+<img width="800" alt="admin-books-screenshot" src="docs/img/admin_books.png">
 
----
-
-<div align="center">
-
-<i>Other places you can find us:</i><br>
-
-<a href="https://www.youtube.com/channel/UCRM1gWNTDx0SHIqUJygD-kQ" target="_blank"><img src="https://img.shields.io/badge/YouTube-%23E4405F.svg?&style=flat-square&logo=youtube&logoColor=white" alt="YouTube"></a>
-<a href="https://www.twitter.com/justdjangocode" target="_blank"><img src="https://img.shields.io/badge/Twitter-%231877F2.svg?&style=flat-square&logo=twitter&logoColor=white" alt="Twitter"></a>
-
-</div>
+## In case you find a bug/suggested improvement for the Django Library Management System
+Our issue tracker is available here: https://github.com/callbacksin/django-library-management-system/issues
